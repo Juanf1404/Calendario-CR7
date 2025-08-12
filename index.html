@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario Editorial</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .cr7-calendar {
+            background: linear-gradient(rgba(255,255,255,0.65), rgba(255,255,255,0.65)), 
+                        url('https://hips.hearstapps.com/hmg-prod/images/cristiano-ronaldo-of-portugal-looks-dejected-following-news-photo-1624346993.jpg?crop=1.00xw:0.649xh;0,0.0303xh&resize=640:*') center/cover;
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .status-planificado { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+        .status-en_progreso { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+        .status-revision { background: #e9d5ff; color: #7c3aed; border: 1px solid #c4b5fd; }
+        .status-completado { background: #d1fae5; color: #065f46; border: 1px solid #86efac; }
+        
+        .platform-Blog { background: #6b7280; }
+        .platform-Instagram { background: #ec4899; }
+        .platform-LinkedIn { background: #2563eb; }
+        .platform-Twitter { background: #60a5fa; }
+        .platform-Facebook { background: #1d4ed8; }
+        .platform-YouTube { background: #dc2626; }
+        .platform-TikTok { background: #000000; }
+        
+        .calendar-day {
+            min-height: 100px;
+            border: 1px solid #e5e7eb;
+            padding: 8px;
+        }
+        
+        .today {
+            background-color: #eff6ff;
+            border-color: #3b82f6;
+        }
+        
+        .post-item {
+            font-size: 10px;
+            padding: 2px 4px;
+            border-radius: 4px;
+            margin-bottom: 2px;
+            cursor: pointer;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+        
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+        
+        .input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .grid-7 {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-7xl mx-auto p-6 min-h-screen">
+        <div class="bg-white rounded-lg shadow-sm border cr7-calendar">
+            <!-- Header -->
+            <div class="border-b border-gray-200 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-3">
+                        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        <h1 class="text-2xl font-bold text-gray-900">📅 Calendario Editorial CR7 ⚽</h1>
+                    </div>
+                    <button onclick="openForm()" class="btn btn-primary flex items-center space-x-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        <span>Nuevo Post</span>
+                    </button>
+                </div>
+
+                <!-- Controles -->
+                <div class="flex flex-wrap items-center gap-4">
+                    <div class="flex items-center space-x-2">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            placeholder="Buscar contenido..." 
+                            class="input" 
+                            style="width: 200px;"
+                            onkeyup="filterPosts()"
+                        >
+                    </div>
+                    
+                    <div class="flex items-center space-x-2">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"></polygon>
+                        </svg>
+                        <select id="filterStatus" class="input" style="width: auto;" onchange="filterPosts()">
+                            <option value="todos">Todos los estados</option>
+                            <option value="planificado">Planificado</option>
+                            <option value="en_progreso">En Progreso</option>
+                            <option value="revision">En Revisión</option>
+                            <option value="completado">Completado</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                        <button onclick="previousMonth()" class="btn btn-secondary">‹</button>
+                        <span id="currentMonth" class="font-medium text-gray-900 px-4">Agosto 2025</span>
+                        <button onclick="nextMonth()" class="btn btn-secondary">›</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendario -->
+            <div class="p-6">
+                <div class="grid-7 border border-gray-200 rounded-lg overflow-hidden">
+                    <!-- Días de la semana -->
+                    <div class="bg-gray-100 p-3 text-center text-sm font-medium text-gray-700 border-r border-gray-200">Dom</div>
+                    <div class="bg-gray-100 p-3 text-center text-sm font-medium text-gray-700 border-r border-gray-200">Lun</div>
+                    <div class="bg-gray-100 p-3 text-center text-sm font-medium text-gray-700 border-r border-gray-200">Mar</div>
+                    <div class="bg-gray-100 p-3 text-center text-sm font-medium text-gray-700 border-r border-gray-200">Mié</div>
+                    <div class="bg-gray-100 p-3 text-center text-sm font-medium text-gray-700 border-r border-gray-200">Jue</div>
+                    <div class="bg-gray-100 p-3 text-center text-sm font-medium text-gray-700 border-r border-gray-200">Vie</div>
+                    <div class="bg-gray-100 p-3 text-center text-sm font-medium text-gray-700">Sáb</div>
+                    
+                    <!-- Grid del calendario -->
+                    <div id="calendarGrid" class="contents">
+                        <!-- Se genera dinámicamente -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista de posts -->
+            <div class="border-t border-gray-200 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Lista de Contenido</h3>
+                <div id="postsList" class="space-y-3">
+                    <!-- Se genera dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="flex items-center justify-between mb-4">
+                <h3 id="modalTitle" class="text-lg font-semibold text-gray-900">Nuevo Post</h3>
+                <button onclick="closeForm()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Título *</label>
+                    <input type="text" id="formTitle" class="input" required>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Plataforma *</label>
+                        <select id="formPlatform" class="input" required>
+                            <option value="">Seleccionar...</option>
+                            <option value="Blog">Blog</option>
+                            <option value="Instagram">Instagram</option>
+                            <option value="LinkedIn">LinkedIn</option>
+                            <option value="Twitter">Twitter</option>
+                            <option value="Facebook">Facebook</option>
+                            <option value="YouTube">YouTube</option>
+                            <option value="TikTok">TikTok</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                        <select id="formStatus" class="input">
+                            <option value="planificado">Planificado</option>
+                            <option value="en_progreso">En Progreso</option>
+                            <option value="revision">En Revisión</option>
+                            <option value="completado">Completado</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Fecha *</label>
+                        <input type="date" id="formDate" class="input" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Autor</label>
+                        <input type="text" id="formAuthor" class="input">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+                    <input type="text" id="formCategory" class="input" placeholder="ej: Marketing, Tutoriales, Noticias">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Notas</label>
+                    <textarea id="formNotes" class="input" rows="3" placeholder="Notas adicionales, ideas, etc."></textarea>
+                </div>
+
+                <div class="flex space-x-3 pt-4">
+                    <button onclick="savePost()" class="btn btn-primary flex-1">
+                        <span id="saveButtonText">Crear Post</span>
+                    </button>
+                    <button onclick="closeForm()" class="btn btn-secondary flex-1">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Función para guardar en localStorage
+        function savePosts() {
+            localStorage.setItem('calendarPosts', JSON.stringify(posts));
+        }
+
+        // Función para cargar desde localStorage
+        function loadPosts() {
+            const savedPosts = localStorage.getItem('calendarPosts');
+            if (savedPosts) {
+                posts = JSON.parse(savedPosts);
+            } else {
+                // Posts por defecto solo si no hay datos guardados
+                posts = [
+                    {
+                        id: 1,
+                        title: "Tendencias de marketing 2025",
+                        platform: "Blog",
+                        date: "2025-08-15",
+                        status: "planificado",
+                        category: "Marketing",
+                        author: "Equipo",
+                        notes: "Incluir estadísticas recientes"
+                    },
+                    {
+                        id: 2,
+                        title: "Tips de productividad",
+                        platform: "LinkedIn",
+                        date: "2025-08-16",
+                        status: "en_progreso",
+                        category: "Productividad",
+                        author: "Ana",
+                        notes: "Post con carousel"
+                    },
+                    {
+                        id: 3,
+                        title: "Caso de éxito cliente",
+                        platform: "Instagram",
+                        date: "2025-08-17",
+                        status: "completado",
+                        category: "Casos de éxito",
+                        author: "Carlos",
+                        notes: "Stories + post"
+                    }
+                ];
+                savePosts(); // Guardar los posts por defecto
+            }
+        }
+
+        let posts = [];
+        let currentMonth = 7; // Agosto (0-indexado)
+        let currentYear = 2025;
+        let editingId = null;
+
+        const monthNames = [
+            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+        ];
+
+        const statusLabels = {
+            'planificado': 'Planificado',
+            'en_progreso': 'En Progreso',
+            'revision': 'En Revisión',
+            'completado': 'Completado'
+        };
+
+        function renderCalendar() {
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            
+            document.getElementById('currentMonth').textContent = `${monthNames[currentMonth]} ${currentYear}`;
+            
+            let html = '';
+            
+            // Días vacíos al inicio
+            for (let i = 0; i < firstDay; i++) {
+                html += '<div class="calendar-day"></div>';
+            }
+            
+            // Días del mes
+            for (let date = 1; date <= daysInMonth; date++) {
+                const dateString = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
+                const postsForDate = posts.filter(post => post.date === dateString);
+                
+                const isToday = new Date().getDate() === date && 
+                               new Date().getMonth() === currentMonth && 
+                               new Date().getFullYear() === currentYear;
+                
+                html += `
+                    <div class="calendar-day ${isToday ? 'today' : ''}">
+                        <div class="text-sm font-medium mb-1 ${isToday ? 'text-blue-600' : 'text-gray-700'}">${date}</div>
+                        <div>
+                `;
+                
+                postsForDate.slice(0, 3).forEach(post => {
+                    html += `
+                        <div class="post-item status-${post.status}" 
+                             onclick="editPost(${post.id})" 
+                             title="${post.title} - ${post.platform}">
+                            ${post.title}
+                        </div>
+                    `;
+                });
+                
+                if (postsForDate.length > 3) {
+                    html += `<div class="text-xs text-gray-500">+${postsForDate.length - 3} más</div>`;
+                }
+                
+                html += '</div></div>';
+            }
+            
+            document.getElementById('calendarGrid').innerHTML = html;
+        }
+
+        function renderPostsList() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('filterStatus').value;
+            
+            let filteredPosts = posts.filter(post => {
+                const matchesSearch = post.title.toLowerCase().includes(searchTerm) ||
+                                     post.category.toLowerCase().includes(searchTerm) ||
+                                     post.platform.toLowerCase().includes(searchTerm);
+                const matchesStatus = statusFilter === 'todos' || post.status === statusFilter;
+                return matchesSearch && matchesStatus;
+            });
+            
+            // Ordenar por fecha
+            filteredPosts.sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            let html = '';
+            
+            filteredPosts.forEach(post => {
+                const date = new Date(post.date).toLocaleDateString('es-ES');
+                html += `
+                    <div class="bg-gray-50 rounded-lg p-4 flex items-center justify-between hover:bg-gray-100 transition-colors">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-3 mb-2">
+                                <h4 class="font-medium text-gray-900">${post.title}</h4>
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border status-${post.status}">
+                                    ${statusLabels[post.status]}
+                                </span>
+                                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium text-white platform-${post.platform}">
+                                    ${post.platform}
+                                </span>
+                            </div>
+                            <div class="flex items-center space-x-4 text-sm text-gray-600">
+                                <span>📅 ${date}</span>
+                                <span>🏷️ ${post.category}</span>
+                                <span>👤 ${post.author}</span>
+                            </div>
+                            ${post.notes ? `<p class="text-sm text-gray-600 mt-1">${post.notes}</p>` : ''}
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="editPost(${post.id})" class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 20h9"></path>
+                                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                                </svg>
+                            </button>
+                            <button onclick="deletePost(${post.id})" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <polyline points="3,6 5,6 21,6"></polyline>
+                                    <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>
+                                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('postsList').innerHTML = html || '<p class="text-gray-500 text-center py-8">No se encontraron posts</p>';
+        }
+
+        function openForm() {
+            editingId = null;
+            document.getElementById('modalTitle').textContent = 'Nuevo Post';
+            document.getElementById('saveButtonText').textContent = 'Crear Post';
+            clearForm();
+            document.getElementById('modal').classList.add('show');
+        }
+
+        function closeForm() {
+            document.getElementById('modal').classList.remove('show');
+            clearForm();
+        }
+
+        function clearForm() {
+            document.getElementById('formTitle').value = '';
+            document.getElementById('formPlatform').value = '';
+            document.getElementById('formStatus').value = 'planificado';
+            document.getElementById('formDate').value = '';
+            document.getElementById('formAuthor').value = '';
+            document.getElementById('formCategory').value = '';
+            document.getElementById('formNotes').value = '';
+        }
+
+        function editPost(id) {
+            const post = posts.find(p => p.id === id);
+            if (!post) return;
+            
+            editingId = id;
+            document.getElementById('modalTitle').textContent = 'Editar Post';
+            document.getElementById('saveButtonText').textContent = 'Actualizar Post';
+            
+            document.getElementById('formTitle').value = post.title;
+            document.getElementById('formPlatform').value = post.platform;
+            document.getElementById('formStatus').value = post.status;
+            document.getElementById('formDate').value = post.date;
+            document.getElementById('formAuthor').value = post.author;
+            document.getElementById('formCategory').value = post.category;
+            document.getElementById('formNotes').value = post.notes;
+            
+            document.getElementById('modal').classList.add('show');
+        }
+
+        function savePost() {
+            const title = document.getElementById('formTitle').value.trim();
+            const platform = document.getElementById('formPlatform').value;
+            const date = document.getElementById('formDate').value;
+            
+            if (!title || !platform || !date) {
+                alert('Por favor completa los campos obligatorios (Título, Plataforma y Fecha)');
+                return;
+            }
+            
+            const postData = {
+                title: title,
+                platform: platform,
+                date: date,
+                status: document.getElementById('formStatus').value,
+                author: document.getElementById('formAuthor').value.trim(),
+                category: document.getElementById('formCategory').value.trim(),
+                notes: document.getElementById('formNotes').value.trim()
+            };
+            
+            if (editingId) {
+                const index = posts.findIndex(p => p.id === editingId);
+                if (index !== -1) {
+                    posts[index] = { ...postData, id: editingId };
+                }
+            } else {
+                posts.push({ ...postData, id: Date.now() });
+            }
+            
+            savePosts(); // Guardar en localStorage
+            closeForm();
+            renderCalendar();
+            renderPostsList();
+        }
+
+        function deletePost(id) {
+            if (confirm('¿Estás seguro de eliminar este post?')) {
+                posts = posts.filter(p => p.id !== id);
+                savePosts(); // Guardar cambios en localStorage
+                renderCalendar();
+                renderPostsList();
+            }
+        }
+
+        function previousMonth() {
+            if (currentMonth === 0) {
+                currentMonth = 11;
+                currentYear--;
+            } else {
+                currentMonth--;
+            }
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            if (currentMonth === 11) {
+                currentMonth = 0;
+                currentYear++;
+            } else {
+                currentMonth++;
+            }
+            renderCalendar();
+        }
+
+        function filterPosts() {
+            renderPostsList();
+        }
+
+        // Inicializar - IMPORTANTE: Cargar posts guardados primero
+        loadPosts();
+        renderCalendar();
+        renderPostsList();
+        
+        // Cerrar modal al hacer clic fuera
+        document.getElementById('modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeForm();
+            }
+        });
+    </script>
+</body>
+</html>
