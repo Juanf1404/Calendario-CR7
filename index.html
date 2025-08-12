@@ -11,9 +11,8 @@
         }
         
         .cr7-calendar {
-            background: linear-gradient(rgba(255,255,255,0.65), rgba(255,255,255,0.65)), 
-                        url('https://hips.hearstapps.com/hmg-prod/images/cristiano-ronaldo-of-portugal-looks-dejected-following-news-photo-1624346993.jpg?crop=1.00xw:0.649xh;0,0.0303xh&resize=640:*') center/cover;
-            border-radius: 8px;
+            background: linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.85)), 
+                    url('https://hips.hearstapps.com/hmg-prod/images/cristiano-ronaldo-of-portugal-looks-dejected-following-news-photo-1624346993.jpg?crop=1.00xw:0.649xh;0,0.0303xh&resize=640:*') center/cover;            border-radius: 8px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
         .status-planificado { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
@@ -30,9 +29,20 @@
         .platform-TikTok { background: #000000; }
         
         .calendar-day {
-            min-height: 100px;
+            min-height: 80px;
             border: 1px solid #e5e7eb;
-            padding: 8px;
+            padding: 4px;
+        }
+        
+        @media (max-width: 768px) {
+            .calendar-day {
+                min-height: 60px;
+                padding: 2px;
+            }
+            
+            .calendar-day .text-sm {
+                font-size: 11px;
+            }
         }
         
         .today {
@@ -62,6 +72,7 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            padding: 16px;
         }
         
         .modal.show {
@@ -70,12 +81,19 @@
         
         .modal-content {
             background: white;
-            padding: 24px;
+            padding: 20px;
             border-radius: 8px;
-            width: 90%;
+            width: 100%;
             max-width: 500px;
             max-height: 90vh;
             overflow-y: auto;
+        }
+        
+        @media (max-width: 640px) {
+            .modal-content {
+                padding: 16px;
+                max-height: 95vh;
+            }
         }
         
         .btn {
@@ -127,6 +145,77 @@
         .hidden {
             display: none;
         }
+        
+        /* Responsividad móvil */
+        @media (max-width: 768px) {
+            .max-w-7xl {
+                padding: 12px;
+            }
+            
+            .p-6 {
+                padding: 16px;
+            }
+            
+            .space-x-3 > * + * {
+                margin-left: 8px;
+            }
+            
+            .gap-4 {
+                gap: 8px;
+            }
+            
+            .text-2xl {
+                font-size: 20px;
+            }
+            
+            .btn {
+                padding: 6px 12px;
+                font-size: 13px;
+            }
+            
+            .input {
+                padding: 6px 10px;
+                font-size: 14px;
+            }
+            
+            .grid-cols-2 {
+                grid-template-columns: 1fr;
+            }
+            
+            .flex-wrap {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .space-x-2 > * + * {
+                margin-left: 0;
+                margin-top: 8px;
+            }
+            
+            .space-x-4 > * + * {
+                margin-left: 0;
+                margin-top: 4px;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .grid-7 {
+                font-size: 12px;
+            }
+            
+            .post-item {
+                font-size: 9px;
+                padding: 1px 2px;
+            }
+            
+            .text-lg {
+                font-size: 16px;
+            }
+            
+            .text-sm {
+                font-size: 12px;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -154,8 +243,8 @@
                 </div>
 
                 <!-- Controles -->
-                <div class="flex flex-wrap items-center gap-4">
-                    <div class="flex items-center space-x-2">
+                <div class="flex flex-wrap items-center gap-4 mobile-controls">
+                    <div class="flex items-center space-x-2 w-full sm:w-auto">
                         <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <circle cx="11" cy="11" r="8"></circle>
                             <path d="m21 21-4.35-4.35"></path>
@@ -164,17 +253,16 @@
                             type="text" 
                             id="searchInput" 
                             placeholder="Buscar contenido..." 
-                            class="input" 
-                            style="width: 200px;"
+                            class="input flex-1" 
                             onkeyup="filterPosts()"
                         >
                     </div>
                     
-                    <div class="flex items-center space-x-2">
+                    <div class="flex items-center space-x-2 w-full sm:w-auto">
                         <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"></polygon>
                         </svg>
-                        <select id="filterStatus" class="input" style="width: auto;" onchange="filterPosts()">
+                        <select id="filterStatus" class="input flex-1 sm:flex-none" onchange="filterPosts()">
                             <option value="todos">Todos los estados</option>
                             <option value="planificado">Planificado</option>
                             <option value="en_progreso">En Progreso</option>
@@ -183,9 +271,9 @@
                         </select>
                     </div>
 
-                    <div class="flex items-center space-x-2">
+                    <div class="flex items-center justify-center space-x-2 w-full sm:w-auto">
                         <button onclick="previousMonth()" class="btn btn-secondary">‹</button>
-                        <span id="currentMonth" class="font-medium text-gray-900 px-4">Agosto 2025</span>
+                        <span id="currentMonth" class="font-medium text-gray-900 px-2 text-center">Agosto 2025</span>
                         <button onclick="nextMonth()" class="btn btn-secondary">›</button>
                     </div>
                 </div>
@@ -239,7 +327,7 @@
                     <input type="text" id="formTitle" class="input" required>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Plataforma *</label>
                         <select id="formPlatform" class="input" required>
@@ -264,7 +352,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Fecha *</label>
                         <input type="date" id="formDate" class="input" required>
